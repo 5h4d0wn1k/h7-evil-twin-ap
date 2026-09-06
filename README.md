@@ -65,9 +65,38 @@ This project is the **attacker counterpart** to H1 (Deauth Detector):
 - **W6 — Beacon Flood**: Extend to mass fake AP generation
 - **X5 — MITM Suite**: Combine with network interception
 
-## Legal Disclaimer
+## IMPORTANT: Read before use.
 
-This tool is for authorized security testing only. Unauthorized use is illegal. Always obtain written permission before testing on networks you don't own.
+This project is provided for **educational and authorized security testing purposes only**.
+
+### Authorization Requirements
+- You MUST have explicit written permission from the network/device owner before testing
+- Use only on networks you own or have explicit authorization to test
+- This tool is designed for research in your own lab only
+
+### Legal Framework
+- **Computer Fraud and Abuse Act (CFAA)**: Unauthorized access to computer systems is a federal crime
+- **Title 18 U.S.C. § 2510 et seq. (Wiretap Act)**: Unauthorized interception of communications is illegal
+- **State Laws**: Many states have additional computer crime and surveillance statutes
+
+### Acceptable Use
+- Research on networks you own (authorized lab bench)
+- Security education and training
+- Academic rogue-AP detection research in controlled environments
+
+### Prohibited Use
+- Cloning or impersonating access points you do not own
+- Credential harvesting without authorization
+- Any activity that violates applicable laws or regulations
+
+### No Warranty
+This software is provided "AS IS" without warranty of any kind. The author is not responsible for any misuse or damage caused by this software.
+
+### Responsible Disclosure
+If you discover vulnerabilities using this tool, follow responsible disclosure practices:
+1. Report to the vendor/owner privately
+2. Allow reasonable time for remediation
+3. Do not exploit beyond proof of concept
 
 ## License
 
