@@ -91,9 +91,9 @@ int selected_network = -1;
 bool ap_active = false;
 
 // Evil Twin AP config
-const char* evil_ssid = "Free_WiFi";
+const char* evil_ssid = "lab-free-wifi";
 uint8_t evil_channel = 6;
-uint8_t evil_bssid[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x01};
+uint8_t evil_bssid[6] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
 
 // Deauth packet (802.11 deauthentication frame)
 uint8_t deauth_packet[] = {
