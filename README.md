@@ -3,137 +3,103 @@
 > or hold explicit written authorization to assess**. Unauthorized use is
 > prohibited and may be illegal. Read [ETHICS.md](ETHICS.md) and
 > [SCOPE.md](SCOPE.md) before use. Use at your own risk; **AS IS**, no warranty.
-# H7 — Evil Twin AP
 
-Clone any WiFi SSID, create a fake access point, and capture credentials via captive portal.
+# H7 — Evil Twin AP: Rogue-AP Emulation & Credential-Log Audit Lab
 
-## Overview
+[![License](https://img.shields.io/github/license/5h4d0wn1k/h7-evil-twin-ap)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/5h4d0wn1k/h7-evil-twin-ap)](https://github.com/5h4d0wn1k/h7-evil-twin-ap/stargazers)
+[![Last Commit](https://img.shields.io/github/last-commit/5h4d0wn1k/h7-evil-twin-ap)](https://github.com/5h4d0wn1k/h7-evil-twin-ap/commits/master)
+[![Issues](https://img.shields.io/github/issues/5h4d0wn1k/h7-evil-twin-ap)](https://github.com/5h4d0wn1k/h7-evil-twin-ap/issues)
 
-This project implements an Evil Twin attack tool that:
-- Scans for nearby WiFi networks
-- Clones the SSID and channel of a target network
-- Creates a fake AP with the same name
-- Deauthenticates the original AP to force clients to reconnect
-- Captures credentials through a captive portal
+**H7** is a wireless security lab for studying rogue access points: an
+ESP32-C6 firmware that clones an SSID, hosts a captive portal, and builds a
+deauth engine — paired with an offline Python host helper that redacts and
+audits credential logs produced during authorized own-network tests.
 
-**WARNING: Educational use only. Test on your own networks.**
+## Why H7?
 
-## Hardware
-
-| Component | Connection | Role |
-|-----------|------------|------|
-| ESP32-C6 | Main board | Evil twin AP + deauth engine |
+Rogue access points and captive-portal credential capture are central concepts
+in Wi-Fi security education — and equally central to defending against them.
+H7 provides the attacker side in a strictly lab-scoped way: the ESP32-C6 sketch
+scans networks, clones SSID/channel, spoofs BSSID, serves a captive portal,
+and drives a deauth engine, while the `host/` helper parses the resulting
+credential logs with redaction-by-default and requires an explicit `--reveal`
+flag in authorized labs. Everything above stays on networks you own.
 
 ## Features
 
-- **Network Scanner**: Discovers nearby networks with signal strength
-- **SSID Cloning**: Exact replica of target network name
-- **Channel Matching**: Operates on same channel as target
-- **BSSID Spoofing**: Custom MAC address for AP
-- **Captive Portal**: Web-based credential capture
-- **Deauth Engine**: Forces clients to disconnect
-- **Serial Control**: Interactive command interface
+- **Wi-Fi network scanner** — discovers nearby networks with signal strength.
+- **SSID + channel cloning** — exact replica of the target network's name and
+  channel (`firmware/h7_evil_twin/h7_evil_twin.ino`).
+- **BSSID spoofing** — custom MAC address for the rogue AP.
+- **Captive portal** — web-based credential capture page.
+- **Deauth engine** — forces clients to reconnect (`broadcast`/`targeted`).
+- **Serial control** — interactive command interface (`scan`, `start`, `stop`,
+  `deauth`, `creds`, `select N`).
+- **Offline credential-log audit** — `host/h7_cli.py` parses captured logs,
+  redacts passwords by default, and reports SSID/password pairs
+  (`--demo`, `--file`, `--reveal`).
+- **Unit tests** — `python3 -m unittest discover -s tests`.
 
-## Serial Commands
+## Quickstart
 
-```
-scan     - Scan for nearby networks
-select N - Select network N as target
-start    - Start evil twin AP
-stop     - Stop evil twin AP
-deauth   - Send deauth packets to target
-creds    - Show captured credentials
-```
+### Prerequisites
 
-## Captured Output
+- ESP32-C6 board + Arduino CLI with `esp32:esp32:esp32c6` core
+- Python 3.8+ for the host helper
 
-```
-*** CREDENTIAL CAPTURED ***
-SSID: lab-own-wifi
-Password: h0n3y
-Client: 00:11:22:33:44:55
-**************************
-```
-
-## Build & Flash
+### Flash the firmware
 
 ```bash
-# ESP32-C6 specific
-arduino-cli compile --fqbn esp32:esp32:esp32c6 h7_evil_twin
-arduino-cli upload --fqbn esp32:esp32:esp32c6 --port /dev/ttyACM0 h7_evil_twin
+arduino-cli compile --fqbn esp32:esp32:esp32c6 firmware/h7_evil_twin
+arduino-cli upload --fqbn esp32:esp32:esp32c6 --port /dev/ttyACM0 firmware/h7_evil_twin
 ```
 
-## Research Value
+### Host-side log audit (offline demo, redacted)
 
-This project is the **attacker counterpart** to H1 (Deauth Detector):
-- **W1 — Deauth Engine + IDS**: Complete attack/defense pair
-- **W6 — Beacon Flood**: Extend to mass fake AP generation
-- **X5 — MITM Suite**: Combine with network interception
+```bash
+python3 host/h7_cli.py --demo
+python3 host/h7_cli.py --file fixtures/creds.log                 # redacted report
+python3 host/h7_cli.py --file fixtures/creds.log --reveal        # authorized lab only
+```
 
-## IMPORTANT: Read before use.
+### Tests
 
-This project is provided for **educational and authorized security testing purposes only**.
+```bash
+python3 -m unittest discover -s tests
+```
 
-### Authorization Requirements
-- You MUST have explicit written permission from the network/device owner before testing
-- Use only on networks you own or have explicit authorization to test
-- This tool is designed for research in your own lab only
+## Project Structure
 
-### Legal Framework
-- **Computer Fraud and Abuse Act (CFAA)**: Unauthorized access to computer systems is a federal crime
-- **Title 18 U.S.C. § 2510 et seq. (Wiretap Act)**: Unauthorized interception of communications is illegal
-- **State Laws**: Many states have additional computer crime and surveillance statutes
+- `firmware/h7_evil_twin/h7_evil_twin.ino` — ESP32-C6 evil-twin sketch
+  (scanner, clone, portal, deauth).
+- `host/h7_cli.py` — offline credential-log parser with redaction.
+- `host/hw_common.py` — shared host helpers and demo tag.
+- `fixtures/creds.log` — sample own-lab credential log.
+- `docs/` — `ARCHITECTURE.md` and `TEST_LOG.md`.
+- `tests/` — host helper unit tests.
 
-### Acceptable Use
-- Research on networks you own (authorized lab bench)
-- Security education and training
-- Academic rogue-AP detection research in controlled environments
+## Research Context
 
-### Prohibited Use
-- Cloning or impersonating access points you do not own
-- Credential harvesting without authorization
-- Any activity that violates applicable laws or regulations
+H7 is the attacker counterpart to deauth-detection projects: combine it with a
+beacon flooder for mass fake-AP studies, or with an IDS (WIDS) to validate
+rogue-AP detection.
 
-### No Warranty
-This software is provided "AS IS" without warranty of any kind. The author is not responsible for any misuse or damage caused by this software.
+## Documentation
 
-### Responsible Disclosure
-If you discover vulnerabilities using this tool, follow responsible disclosure practices:
-1. Report to the vendor/owner privately
-2. Allow reasonable time for remediation
-3. Do not exploit beyond proof of concept
+- [Architecture](docs/ARCHITECTURE.md)
+- [Test log](docs/TEST_LOG.md)
+- [Firmware notes](firmware/README.md)
+- [ETHICS.md](ETHICS.md), [SCOPE.md](SCOPE.md), [SECURITY.md](SECURITY.md)
 
-## Live Lab Test Plan
+## Contributing
 
-Run ONLY on an isolated, authorized own-lab bench against devices, networks,
-and spectrum **you own**. No third-party callers, bystanders, or spectrum users
-may be within range of any test transmission.
-
-1. **Isolate** - Put the DUT in a shielded/Faraday enclosure or a room with no
-   third-party devices in range. Use attenuators on any transmit path.
-2. **Own devices only** - Every target (AP, remote, tag, GPS module, drone FC,
-   receiver) must be your own hardware.
-3. **Lowest power, shortest duration** - Start at minimum TX power / duty cycle
-   and use only the seconds needed.
-4. **Record** - Save before/after logs to `reports/` (git-ignored). Never
-   capture or store third-party traffic.
-5. **Cleanup** - Restore placeholder SSIDs (`lab-*`), MACs (`00:11:22:33:44:55`),
-   example.com / RFC5737 addresses, and clear any captured data from the device.
-
-> Jammer / spoofer / replay projects are **proofs for study and simulation**
-> only. They refuse live interference scenarios: a live bench trigger requires
-> the `LAB_*` allowlist environment variable AND explicit `--yes` confirmation,
-> and even then only against your own hardware in a shielded bench.
-
-## Metrics
-
-| Metric | Target | Where |
-|---|---|---|
-| Firmware compile | `arduino-cli compile --fqbn esp32:esp32:esp32c6 firmware/h7_evil_twin` PASS | CI/local |
-| Host helper | `python3 host/h7_cli.py --demo` exits 0 (offline) | host/ |
-| Unit tests | `python3 -m unittest discover -s tests` passes | tests/ |
-| py_compile | every `host/*.py` compiles clean | CI/local |
+Contributions for educational and authorized wireless-security research are
+welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT
+MIT License — see [LICENSE](LICENSE) for details.
+
+> **⚠️ EDUCATIONAL USE ONLY — AUTHORIZED TESTING ONLY.**
